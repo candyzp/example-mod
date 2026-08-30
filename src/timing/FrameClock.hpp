@@ -13,8 +13,9 @@ struct FrameSample {
 };
 
 // Called once at the beginning of each Cocos scheduler frame.
-// This is observation-only: it never changes scheduler, gameplay, or render state.
-void beginFrame(float schedulerDelta);
+// Samples are valid only during active gameplay; inactive frames reset the
+// session so timing can never span a pause, menu, or end screen.
+void beginFrame(float schedulerDelta, bool activeGameplay);
 
 // Latest frame timing snapshot. The returned reference is stable for the process lifetime.
 FrameSample const& current();

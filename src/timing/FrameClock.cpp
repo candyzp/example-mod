@@ -12,11 +12,23 @@ Clock::time_point g_epoch;
 Clock::time_point g_lastFrame;
 bool g_initialized = false;
 bool g_loggedReady = false;
+
+void resetSession() {
+    g_sample = {};
+    g_initialized = false;
+}
 } // namespace
 
 namespace cbfplus::timing {
 
-void beginFrame(float schedulerDelta) {
+void beginFrame(float schedulerDelta, bool activeGameplay) {
+    if (!activeGameplay) {
+        if (g_initialized || g_sample.index != 0 || g_sample.valid) {
+            resetSession();
+        }
+        return;
+    }
+
     auto const now = Clock::now();
 
     if (!g_initialized) {
@@ -38,7 +50,7 @@ void beginFrame(float schedulerDelta) {
     g_sample.valid = true;
     g_lastFrame = now;
 
-    // One-shot proof that the read-only frame boundary hook is running.
+    // One-shot proof that the read-only frame boundary hook is running during gameplay.
     if (!g_loggedReady && g_sample.index >= 120) {
         g_loggedReady = true;
         geode::log::info(
