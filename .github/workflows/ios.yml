@@ -18,6 +18,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Restore CBF+ logo
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64
+          from pathlib import Path
+          encoded = Path("assets/logo.b64").read_text().strip()
+          Path("logo.png").write_bytes(base64.b64decode(encoded))
+          PY
+
       - name: Build CBF+
         uses: geode-sdk/build-geode-mod@main
         with:
