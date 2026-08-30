@@ -8,10 +8,11 @@ if ("${CMAKE_SYSTEM_NAME}" STREQUAL "iOS" OR IOS)
     set(CMAKE_OSX_ARCHITECTURES "arm64")
 endif()
 
-project(CBFPlus VERSION 0.1.0)
+project(CBFPlus VERSION 0.1.2)
 
 add_library(${PROJECT_NAME} SHARED
     src/main.cpp
+    src/timing/FrameClock.cpp
 )
 
 if (NOT DEFINED ENV{GEODE_SDK})
