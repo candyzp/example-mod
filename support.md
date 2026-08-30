@@ -1,2 +1,5 @@
-This file can include information on how users can support you (Ko-Fi or Patreon for example).
-You can also delete this file if you don't need it.
+# CBF+ Support
+
+For build or compatibility problems, open an issue with the Geometry Dash version, Geode version, device/platform, and the relevant Geode crash or build log.
+
+During staged development, please identify which CBF+ part or checkpoint the issue appeared in.
