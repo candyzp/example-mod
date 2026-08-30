@@ -1,23 +1,33 @@
-# Template
-This is where she makes a mod.
+# CBF+
 
-<img src="logo.png" width="150" alt="the mod's logo" />
+CBF+ is an iOS-first Geometry Dash / Geode project focused on precise input timing and smooth render-side presentation without allowing visual smoothing to become gameplay state.
 
-*Update logo.png to change your mod's icon (please)*
+## Current milestone
 
-## Getting started
-We recommend heading over to [the getting started section on our docs](https://docs.geode-sdk.org/getting-started/) for useful info on what to do next.
+**Part 1 — Build foundation**
 
-## Build instructions
-For more info, see [our docs](https://docs.geode-sdk.org/getting-started/create-mod#build)
-```sh
-# Assuming you have the Geode CLI set up already
-geode build
-```
+The current build is intentionally minimal. It contains no gameplay hooks and no interpolation code yet. Its only job is to prove that the project can compile and package correctly for iOS before any gameplay system is introduced.
 
-# Resources
-* [Geode SDK Documentation](https://docs.geode-sdk.org/)
-* [Geode SDK Source Code](https://github.com/geode-sdk/geode/)
-* [Geode CLI](https://github.com/geode-sdk/cli)
-* [Bindings](https://github.com/geode-sdk/bindings/)
-* [Dev Tools](https://github.com/geode-sdk/DevTools)
+### Target
+
+- Geometry Dash: `2.2081`
+- Geode: `5.10.1`
+- Platform: iOS
+- Architecture: arm64
+- Mod ID: `candyzp.cbfplus`
+- Package: `candyzp.cbfplus.geode`
+- iOS binary: `candyzp.cbfplus.ios.dylib`
+
+## Build
+
+Pushes to `main` run the iOS GitHub Actions workflow. A successful run uploads the finished `.geode` package as the `CBFPlus-iOS` artifact.
+
+## Development rule
+
+CBF+ is being built one isolated system at a time. A part is only considered complete after its own build/test checkpoint passes.
+
+The core architecture will keep authoritative Geometry Dash physics separate from render-only interpolation.
+
+## Status
+
+Part 1 is active. Gameplay behavior is intentionally unchanged.
