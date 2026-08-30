@@ -7,11 +7,13 @@ namespace cbfplus::render {
 struct PlayerVisualSample {
     cocos2d::CCPoint nodePosition = {0.0f, 0.0f};
     cocos2d::CCPoint internalPosition = {0.0f, 0.0f};
+    float rotation = 0.0f;
     float alpha = 0.0f;
+    bool protectedSlopeTransition = false;
     bool valid = false;
 };
 
-// Produce a render-only Player 1 position one confirmed physics step behind.
+// Produce a render-only Player 1 transform one confirmed physics step behind.
 // The authoritative gameplay state is never modified by this function.
 PlayerVisualSample samplePlayer1();
 

@@ -1,5 +1,15 @@
 # CBF+ Changelog
 
+## v0.1.5 - Part 6
+
+- Added render-only Player 1 rotation interpolation on the same one-physics-step-delayed timeline as X/Y smoothing.
+- Uses shortest-path angle interpolation so rotations crossing 0/360 degrees do not spin the long way around.
+- Applies the visual rotation only to the base `CCNode` during `GJBaseGameLayer::visit()`, then restores the exact authoritative rotation immediately afterward.
+- Extended authoritative samples with ground/slope contact metadata, including slope rotation and the identities of the last ground and current slope objects for later surface/object work.
+- Added a conservative slope-transition guard: entering/leaving a slope or changing confirmed slope angle snaps to the newest confirmed transform for that tiny interval instead of interpolating through the slope corner.
+- Moving objects are not interpolated yet; the new contact metadata is groundwork so later world/object smoothing can stay synchronized with the player.
+- Still no Player 2, camera, trail, effect, or future-physics interpolation in this part.
+
 ## v0.1.4 - Part 5
 
 - Added the first render-side smoothing path: Player 1 X/Y interpolation only.

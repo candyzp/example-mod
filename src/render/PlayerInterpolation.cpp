@@ -8,6 +8,7 @@
 
 namespace {
 constexpr double kPhysicsFramesPerSecond = 60.0;
+constexpr float kSlopeRotationEpsilon = 0.01f;
 
 cocos2d::CCPoint lerpPoint(
     cocos2d::CCPoint const& from,
@@ -18,6 +19,33 @@ cocos2d::CCPoint lerpPoint(
         from.x + (to.x - from.x) * alpha,
         from.y + (to.y - from.y) * alpha,
     };
+}
+
+float shortestAngleDelta(float from, float to) {
+    if (!std::isfinite(from) || !std::isfinite(to)) {
+        return 0.0f;
+    }
+    return std::remainder(to - from, 360.0f);
+}
+
+float lerpAngle(float from, float to, float alpha) {
+    return from + shortestAngleDelta(from, to) * alpha;
+}
+
+bool crossesSlopeDiscontinuity(
+    cbfplus::state::PlayerSample const& previous,
+    cbfplus::state::PlayerSample const& current
+) {
+    if (previous.isOnSlope != current.isOnSlope) {
+        return true;
+    }
+
+    if (previous.isOnSlope && current.isOnSlope) {
+        return std::abs(shortestAngleDelta(previous.slopeRotation, current.slopeRotation)) >
+            kSlopeRotationEpsilon;
+    }
+
+    return false;
 }
 } // namespace
 
@@ -40,7 +68,8 @@ PlayerVisualSample samplePlayer1() {
     auto const& current = playerTrack.current;
 
     if (!std::isfinite(current.stepDelta) || current.stepDelta <= 0.0f ||
-        !std::isfinite(current.captureTime) || current.captureTime <= 0.0) {
+        !std::isfinite(current.captureTime) || current.captureTime <= 0.0 ||
+        !std::isfinite(previous.rotation) || !std::isfinite(current.rotation)) {
         return result;
     }
 
@@ -58,9 +87,24 @@ PlayerVisualSample samplePlayer1() {
     elapsed = std::max(0.0, elapsed);
 
     float const alpha = static_cast<float>(std::clamp(elapsed / stepSeconds, 0.0, 1.0));
+    bool const slopeDiscontinuity = crossesSlopeDiscontinuity(previous, current);
+
+    // A slope transition is not a straight-line render segment. Until object /
+    // surface interpolation exists, prefer the newly confirmed transform for
+    // this tiny interval instead of drawing through the slope corner.
+    if (slopeDiscontinuity) {
+        result.nodePosition = current.nodePosition;
+        result.internalPosition = current.internalPosition;
+        result.rotation = current.rotation;
+        result.alpha = 1.0f;
+        result.protectedSlopeTransition = true;
+        result.valid = true;
+        return result;
+    }
 
     result.nodePosition = lerpPoint(previous.nodePosition, current.nodePosition, alpha);
     result.internalPosition = lerpPoint(previous.internalPosition, current.internalPosition, alpha);
+    result.rotation = lerpAngle(previous.rotation, current.rotation, alpha);
     result.alpha = alpha;
     result.valid = true;
     return result;

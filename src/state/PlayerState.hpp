@@ -18,9 +18,14 @@ struct PlayerSample {
     double yVelocity = 0.0;
     double captureTime = 0.0;
     float rotation = 0.0f;
+    float slopeRotation = 0.0f;
     float stepDelta = 0.0f;
     std::uint64_t frameIndex = 0;
     std::uint64_t sequence = 0;
+    std::uintptr_t groundObjectId = 0;
+    std::uintptr_t slopeObjectId = 0;
+    bool isOnGround = false;
+    bool isOnSlope = false;
     bool valid = false;
 };
 

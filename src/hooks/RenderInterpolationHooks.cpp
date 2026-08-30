@@ -9,23 +9,25 @@ using namespace geode::prelude;
 namespace {
 bool g_loggedInterpolationReady = false;
 
-struct PositionRestoreGuard {
+struct TransformRestoreGuard {
     PlayerObject* player = nullptr;
     cocos2d::CCPoint nodePosition = {0.0f, 0.0f};
     cocos2d::CCPoint internalPosition = {0.0f, 0.0f};
+    float rotation = 0.0f;
 
-    ~PositionRestoreGuard() {
+    ~TransformRestoreGuard() {
         if (!player) {
             return;
         }
         player->CCNode::setPosition(nodePosition);
         player->m_position = internalPosition;
+        player->CCNode::setRotation(rotation);
     }
 };
 } // namespace
 
-// Part 5: temporarily present an interpolated P1 X/Y only during the normal
-// render traversal, then restore the authoritative physics state immediately.
+// Part 6: temporarily present interpolated P1 position + rotation only during
+// the normal render traversal, then restore the authoritative physics state.
 class $modify(CBFPlusRenderInterpolation, GJBaseGameLayer) {
     void visit() {
         auto* playLayer = geode::cast::typeinfo_cast<PlayLayer*>(this);
@@ -41,25 +43,28 @@ class $modify(CBFPlusRenderInterpolation, GJBaseGameLayer) {
         }
 
         auto* player = playLayer->m_player1;
-        PositionRestoreGuard restore {
+        TransformRestoreGuard restore {
             player,
             player->getPosition(),
             player->m_position,
+            player->getRotation(),
         };
 
-        // Match the proven render-only pattern used by the smoothing reference:
-        // bypass PlayerObject setters and touch only the node/internal position
-        // for the duration of visit(). Physics never observes these values.
+        // Touch only the base CCNode transform for the duration of visit().
+        // PlayerObject gameplay state remains authoritative before and after.
         player->CCNode::setPosition(visual.nodePosition);
         player->m_position = visual.internalPosition;
+        player->CCNode::setRotation(visual.rotation);
 
         if (!g_loggedInterpolationReady) {
             g_loggedInterpolationReady = true;
             geode::log::info(
-                "CBF+ P1 XY interpolation active: alpha {:.3f}, visual ({:.2f}, {:.2f})",
+                "CBF+ P1 XY+rotation interpolation active: alpha {:.3f}, visual ({:.2f}, {:.2f}) rot {:.2f}, slope-guard {}",
                 static_cast<double>(visual.alpha),
                 static_cast<double>(visual.nodePosition.x),
-                static_cast<double>(visual.nodePosition.y)
+                static_cast<double>(visual.nodePosition.y),
+                static_cast<double>(visual.rotation),
+                visual.protectedSlopeTransition
             );
         }
 

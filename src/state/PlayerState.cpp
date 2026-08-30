@@ -44,9 +44,14 @@ void capture(PlayerObject* player, float stepDelta) {
     sample.yVelocity = player->m_yVelocity;
     sample.captureTime = cbfplus::timing::nowSeconds();
     sample.rotation = player->getRotation();
+    sample.slopeRotation = player->m_slopeRotation;
     sample.stepDelta = stepDelta;
     sample.frameIndex = cbfplus::timing::current().index;
     sample.sequence = target.current.valid ? target.current.sequence + 1 : 1;
+    sample.groundObjectId = reinterpret_cast<std::uintptr_t>(player->m_lastGroundObject);
+    sample.slopeObjectId = reinterpret_cast<std::uintptr_t>(player->m_currentSlope);
+    sample.isOnGround = player->m_isOnGround;
+    sample.isOnSlope = player->m_isOnSlope;
     sample.valid = true;
 
     if (target.current.valid) {
