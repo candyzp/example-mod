@@ -67,8 +67,8 @@ bool crossesGameplayDiscontinuity(
         return true;
     }
 
-    // Geometry Dash updates m_lastPortalPos when portal/teleport state changes.
-    // Never interpolate a visual segment across that boundary.
+    // GD uses m_lastPortalPos in portal/pad activation paths. If that confirmed
+    // activation marker moves, keep this render interval authoritative.
     return pointChanged(previous.lastPortalPosition, current.lastPortalPosition);
 }
 } // namespace
