@@ -43,7 +43,7 @@ jobs:
           test -n "$PACKAGE"
           unzip -l "$PACKAGE" | grep -F 'candyzp.cbfplus.ios.dylib'
           unzip -l "$PACKAGE" | grep -F 'logo.png'
-          unzip -p "$PACKAGE" mod.json | grep -F '"version": "v0.1.1"'
+          unzip -p "$PACKAGE" mod.json | grep -F '"version": "v0.1.2"'
 
       - name: Upload CBF+ package
         uses: actions/upload-artifact@v4
