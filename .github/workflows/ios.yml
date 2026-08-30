@@ -1,0 +1,34 @@
+name: Build CBF+ for iOS
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build-ios:
+    name: Build iOS .geode
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build CBF+
+        id: geode
+        uses: geode-sdk/build-geode-mod@main
+        with:
+          target: iOS
+          sdk: given
+          combine: false
+
+      - name: Upload CBF+ package
+        uses: actions/upload-artifact@v4
+        with:
+          name: CBFPlus-iOS
+          path: ${{ steps.geode.outputs.build-output }}/*.geode
+          if-no-files-found: error
