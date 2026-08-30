@@ -1,12 +1,21 @@
 # CBF+ Changelog
 
+## v0.1.3 - Part 4
+
+- Added read-only authoritative player-state capture for the real PlayLayer players only.
+- Captures the state left after `PlayerObject::update(float)`: node position, internal position, rotation, X/Y velocity, raw step delta, scheduler frame index, and a per-player sequence number.
+- Stores only previous/current samples for Player 1 and Player 2; there is no fake player, prediction simulation, interpolation, or gameplay-state snapshotting.
+- Clears capture history on level init, death, restart, checkpoint load, delayed reset, and full reset so later interpolation cannot bridge across a discontinuity.
+- Adds a one-shot log proving authoritative Player 1 capture is running.
+
 ## v0.1.2 - Part 3
 
 - Added the first real runtime system: a read-only frame clock.
 - Hooks `CCScheduler::update(float)` at the same non-Windows frame boundary used by Click Between Frames on iOS.
 - Records frame index, Cocos scheduler delta, measured frame-to-frame wall-clock delta, and elapsed runtime.
-- Emits one diagnostic log after 120 frames so the timing hook can be proven active without changing gameplay or visuals.
-- Does not read or modify player state, physics, input, camera, trails, or rendering yet.
+- Timing is reset outside active gameplay so it cannot span menus, pauses, or the end screen.
+- Emits one diagnostic log after 120 active gameplay frames so the timing hook can be proven active without changing gameplay or visuals.
+- Does not modify player state, physics, input, camera, trails, or rendering.
 
 ## v0.1.1 - Part 2
 
