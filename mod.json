@@ -5,7 +5,7 @@
     },
     "id": "candyzp.cbfplus",
     "name": "CBF+",
-    "version": "v0.1.5",
+    "version": "v0.1.6",
     "developer": "candyzp",
     "description": "An iOS-first Geometry Dash timing and render-smoothing project built for Geode.",
     "tags": [

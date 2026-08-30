@@ -25,6 +25,34 @@ std::optional<std::size_t> resolveTrack(PlayerObject* player) {
     }
     return std::nullopt;
 }
+
+cbfplus::state::PlayerModeFlags readModeFlags(PlayerObject* player) {
+    using namespace cbfplus::state;
+
+    PlayerModeFlags flags = 0;
+    if (player->m_isShip) {
+        flags |= mode::Ship;
+    }
+    if (player->m_isBird) {
+        flags |= mode::Bird;
+    }
+    if (player->m_isBall) {
+        flags |= mode::Ball;
+    }
+    if (player->m_isDart) {
+        flags |= mode::Dart;
+    }
+    if (player->m_isRobot) {
+        flags |= mode::Robot;
+    }
+    if (player->m_isSpider) {
+        flags |= mode::Spider;
+    }
+    if (player->m_isSwing) {
+        flags |= mode::Swing;
+    }
+    return flags;
+}
 } // namespace
 
 namespace cbfplus::state {
@@ -40,16 +68,20 @@ void capture(PlayerObject* player, float stepDelta) {
 
     sample.nodePosition = player->getPosition();
     sample.internalPosition = player->m_position;
+    sample.lastPortalPosition = player->m_lastPortalPos;
     sample.xVelocity = player->getCurrentXVelocity();
     sample.yVelocity = player->m_yVelocity;
     sample.captureTime = cbfplus::timing::nowSeconds();
     sample.rotation = player->getRotation();
     sample.slopeRotation = player->m_slopeRotation;
+    sample.vehicleSize = player->m_vehicleSize;
     sample.stepDelta = stepDelta;
     sample.frameIndex = cbfplus::timing::current().index;
     sample.sequence = target.current.valid ? target.current.sequence + 1 : 1;
     sample.groundObjectId = reinterpret_cast<std::uintptr_t>(player->m_lastGroundObject);
     sample.slopeObjectId = reinterpret_cast<std::uintptr_t>(player->m_currentSlope);
+    sample.modeFlags = readModeFlags(player);
+    sample.isUpsideDown = player->m_isUpsideDown;
     sample.isOnGround = player->m_isOnGround;
     sample.isOnSlope = player->m_isOnSlope;
     sample.valid = true;

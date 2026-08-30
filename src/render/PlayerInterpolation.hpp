@@ -9,7 +9,10 @@ struct PlayerVisualSample {
     cocos2d::CCPoint internalPosition = {0.0f, 0.0f};
     float rotation = 0.0f;
     float alpha = 0.0f;
+    bool applyVisual = false;
     bool protectedSlopeTransition = false;
+    bool protectedDiscontinuity = false;
+    bool unsupportedMode = false;
     bool valid = false;
 };
 

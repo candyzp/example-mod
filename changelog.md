@@ -1,5 +1,15 @@
 # CBF+ Changelog
 
+## v0.1.6 - Part 7
+
+- Added explicit gamemode/discontinuity safety before expanding interpolation beyond the cube.
+- Authoritative player samples now record the same real mode flags used by the working smoothing reference: ship, UFO/bird, ball, wave/dart, robot, spider, and swing.
+- Also records gravity direction, vehicle/mini size, and `m_lastPortalPos` so portal, gravity, size, and mode transitions can be detected between confirmed samples.
+- Non-cube modes deliberately stay on Geometry Dash's authoritative rendering for now instead of inheriting cube interpolation accidentally; Part 8 will add explicit per-mode support.
+- Cube interpolation is bypassed for any confirmed portal, gravity, size, mode, or slope transition. The render hook leaves the real player transform untouched for that interval rather than drawing through a discontinuity.
+- Existing death/restart/checkpoint reset protection remains in place, so stale samples are still discarded at full gameplay resets.
+- Moving objects/platforms are still not interpolated in this part; their render timeline will be handled separately so the player and contacted world geometry stay synchronized.
+
 ## v0.1.5 - Part 6
 
 - Added render-only Player 1 rotation interpolation on the same one-physics-step-delayed timeline as X/Y smoothing.
