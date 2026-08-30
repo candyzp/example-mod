@@ -43,7 +43,10 @@ jobs:
           test -n "$PACKAGE"
           unzip -l "$PACKAGE" | grep -F 'candyzp.cbfplus.ios.dylib'
           unzip -l "$PACKAGE" | grep -F 'logo.png'
-          unzip -p "$PACKAGE" mod.json | grep -F '"version": "v0.1.2"'
+          unzip -p "$PACKAGE" mod.json | grep -F '"version": "v0.1.3"'
+          VERIFY_DIR=$(mktemp -d)
+          unzip -qq "$PACKAGE" 'candyzp.cbfplus.ios.dylib' -d "$VERIFY_DIR"
+          strings "$VERIFY_DIR/candyzp.cbfplus.ios.dylib" | grep -F 'CBF+ authoritative player capture active'
 
       - name: Upload CBF+ package
         uses: actions/upload-artifact@v4
