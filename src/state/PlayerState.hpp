@@ -16,6 +16,7 @@ struct PlayerSample {
     cocos2d::CCPoint internalPosition = {0.0f, 0.0f};
     double xVelocity = 0.0;
     double yVelocity = 0.0;
+    double captureTime = 0.0;
     float rotation = 0.0f;
     float stepDelta = 0.0f;
     std::uint64_t frameIndex = 0;

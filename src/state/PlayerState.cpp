@@ -42,6 +42,7 @@ void capture(PlayerObject* player, float stepDelta) {
     sample.internalPosition = player->m_position;
     sample.xVelocity = player->getCurrentXVelocity();
     sample.yVelocity = player->m_yVelocity;
+    sample.captureTime = cbfplus::timing::nowSeconds();
     sample.rotation = player->getRotation();
     sample.stepDelta = stepDelta;
     sample.frameIndex = cbfplus::timing::current().index;

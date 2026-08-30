@@ -17,6 +17,9 @@ struct FrameSample {
 // session so timing can never span a pause, menu, or end screen.
 void beginFrame(float schedulerDelta, bool activeGameplay);
 
+// Monotonic wall-clock time shared by capture and render interpolation.
+double nowSeconds();
+
 // Latest frame timing snapshot. The returned reference is stable for the process lifetime.
 FrameSample const& current();
 

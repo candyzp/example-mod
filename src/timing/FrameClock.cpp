@@ -61,6 +61,10 @@ void beginFrame(float schedulerDelta, bool activeGameplay) {
     }
 }
 
+double nowSeconds() {
+    return std::chrono::duration<double>(Clock::now().time_since_epoch()).count();
+}
+
 FrameSample const& current() {
     return g_sample;
 }

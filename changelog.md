@@ -1,5 +1,15 @@
 # CBF+ Changelog
 
+## v0.1.4 - Part 5
+
+- Added the first render-side smoothing path: Player 1 X/Y interpolation only.
+- Uses the authoritative previous/current Player 1 samples captured after vanilla `PlayerObject::update(float)`.
+- Adds a monotonic capture timestamp and computes a standard one-physics-step-delayed interpolation alpha from the current step duration.
+- Temporarily applies interpolated node/internal position only during `GJBaseGameLayer::visit()`, then restores the real authoritative position immediately afterward.
+- Uses `CCNode::setPosition` for the temporary visual state, matching the proven render-only pattern from the smoothing reference while avoiding PlayerObject setter side effects.
+- Does not interpolate rotation, Player 2, camera, trails, effects, or mode-specific visuals yet.
+- Does not predict future physics and does not write interpolated state back into gameplay.
+
 ## v0.1.3 - Part 4
 
 - Added read-only authoritative player-state capture for the real PlayLayer players only.
