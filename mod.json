@@ -5,9 +5,9 @@
     },
     "id": "candyzp.cbfplus",
     "name": "CBF+",
-    "version": "v0.1.0",
+    "version": "v0.1.1",
     "developer": "candyzp",
-    "description": "Clean iOS-first Geode base for experimenting with fast level preprocessing.",
+    "description": "Prewarms level object, transform, sprite-frame, texture, and allocator paths during loading to reduce one-time gameplay stutters.",
     "tags": [
         "performance",
         "enhancement"
