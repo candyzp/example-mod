@@ -8,6 +8,7 @@
 #include <Geode/utils/cocos.hpp>
 
 #include <algorithm>
+#include <bit>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
@@ -21,6 +22,10 @@ namespace {
     // A volatile sink keeps the compiler from throwing away read-only warmup
     // work. Nothing from this value is used by gameplay.
     volatile std::uint64_t g_warmSink = 0;
+
+    void warmFloat(float value) {
+        g_warmSink ^= static_cast<std::uint64_t>(std::bit_cast<std::uint32_t>(value));
+    }
 
     void warmTexture(CCTexture2D* texture) {
         if (!texture) return;
@@ -47,7 +52,10 @@ namespace {
 
             auto const& position = node->getPosition();
             auto const& size = node->getContentSize();
-            g_warmSink += static_cast<std::uint64_t>(position.x + position.y + size.width + size.height);
+            warmFloat(position.x);
+            warmFloat(position.y);
+            warmFloat(size.width);
+            warmFloat(size.height);
 
             if (auto* sprite = typeinfo_cast<CCSprite*>(node)) {
                 warmTexture(sprite->getTexture());
