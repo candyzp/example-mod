@@ -5,13 +5,12 @@
     },
     "id": "candyzp.cbfplus",
     "name": "CBF+",
-    "version": "v0.1.6",
+    "version": "v0.1.0",
     "developer": "candyzp",
-    "description": "An iOS-first Geometry Dash timing and render-smoothing project built for Geode.",
+    "description": "Clean iOS-first Geode base for experimenting with fast level preprocessing.",
     "tags": [
-        "gameplay",
-        "enhancement",
-        "performance"
+        "performance",
+        "enhancement"
     ],
     "links": {
         "source": "https://github.com/candyzp/example-mod"
