@@ -35,13 +35,24 @@ class $modify(CBFPlusPlayLayer, PlayLayer) {
             return false;
         }
 
-        // PlayLayer is now fully constructed but has not returned to the game
-        // yet, so all prewarming completes before the first playable frame.
+        // Every fresh PlayLayer is a fresh CBF+ session. beginLevelSession()
+        // also drops any stale session left behind by an abnormal exit path.
+        cbfplus::beginLevelSession(this);
+
+        // PlayLayer is fully constructed but has not returned to the game yet,
+        // so all prewarming completes before the first playable frame.
         if (!dontCreateObjects) {
             cbfplus::prewarmLevel(this);
         }
 
         return true;
+    }
+
+    void onExit() {
+        // Death/restart does not leave PlayLayer, so it keeps the same optimized
+        // session. Actually leaving the level hits this hard cleanup boundary.
+        cbfplus::endLevelSession(this);
+        PlayLayer::onExit();
     }
 };
 
