@@ -5,9 +5,9 @@
     },
     "id": "candyzp.cbfplus",
     "name": "CBF+",
-    "version": "v0.1.2",
+    "version": "v0.1.3",
     "developer": "candyzp",
-    "description": "Aggressively prewarms shaders, object bounds, sprite frames, unique textures, GL bindings, and allocator size classes during level loading to reduce one-time gameplay stutters.",
+    "description": "Load-time stutter prewarmer with a hard per-level session boundary: restarts reuse optimization, while leaving the level clears all CBF+-owned session state before the next optimization.",
     "tags": [
         "performance",
         "enhancement"
