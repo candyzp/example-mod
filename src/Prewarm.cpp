@@ -17,6 +17,7 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <unordered_set>
 #include <vector>
 
@@ -24,6 +25,18 @@ using namespace geode::prelude;
 
 namespace cbfplus {
 namespace {
+    struct LevelSessionState {
+        PlayLayer* layer = nullptr;
+        std::uint64_t serial = 0;
+        bool optimized = false;
+        std::size_t objectCount = 0;
+        std::size_t objectTypeCount = 0;
+        std::size_t textureCount = 0;
+    };
+
+    std::optional<LevelSessionState> g_levelSession;
+    std::uint64_t g_nextSessionSerial = 0;
+
     volatile std::uint64_t g_warmSink = 0;
 
     void warmFloat(float value) {
@@ -86,14 +99,11 @@ namespace {
             auto* program = cache->programForKey(key);
             if (!program) continue;
 
-            // Force the cached program through the same first-use path that
-            // normal rendering uses, while the loading screen is still up.
             program->use();
             program->setUniformsForBuiltins();
             ++g_warmSink;
         }
 
-        // Leave Cocos on its normal sprite shader instead of an uncommon one.
         if (auto* program = cache->programForKey(kCCShader_PositionTextureColor)) {
             program->use();
             program->setUniformsForBuiltins();
@@ -116,7 +126,6 @@ namespace {
             stack.pop_back();
             if (!node) continue;
 
-            // Resolve the transform cache before the first playable frame.
             (void)node->nodeToWorldTransform();
 
             auto const& position = node->getPosition();
@@ -144,9 +153,6 @@ namespace {
     }
 
     void warmTextureBindings(std::unordered_set<CCTexture2D*> const& textures) {
-        // Reading texture metadata alone does not exercise the GL texture bind
-        // path. Bind each unique texture once through Cocos' own state cache so
-        // the driver sees it during loading instead of on a later gameplay frame.
         for (auto* texture : textures) {
             if (!texture) continue;
 
@@ -173,9 +179,6 @@ namespace {
     }
 
     void warmAllocator(std::size_t objectCount) {
-        // Seed several allocator size classes instead of one large temporary
-        // buffer. This better targets one-off malloc/page activity from small and
-        // medium gameplay allocations while staying strictly load-time only.
         struct Bin {
             std::size_t bytes;
             std::size_t count;
@@ -217,14 +220,39 @@ namespace {
             if (full) break;
         }
 
-        // Destruction happens while the loading screen is still active too,
-        // warming the corresponding free/reuse paths before gameplay begins.
         blocks.clear();
     }
 }
 
+void beginLevelSession(PlayLayer* layer) {
+    if (!layer) return;
+
+    if (g_levelSession && g_levelSession->layer == layer) {
+        return;
+    }
+
+    if (g_levelSession) {
+        log::debug(
+            "CBF+ discarding stale level session {} before starting a new one",
+            g_levelSession->serial
+        );
+        g_levelSession.reset();
+    }
+
+    LevelSessionState state;
+    state.layer = layer;
+    state.serial = ++g_nextSessionSerial;
+    g_levelSession = state;
+
+    log::info("CBF+ level session {} started", state.serial);
+}
+
 void prewarmLevel(PlayLayer* layer) {
     if (!layer || !layer->m_objects) return;
+
+    if (!g_levelSession || g_levelSession->layer != layer) {
+        beginLevelSession(layer);
+    }
 
     auto started = std::chrono::steady_clock::now();
 
@@ -236,12 +264,8 @@ void prewarmLevel(PlayLayer* layer) {
     std::unordered_set<CCTexture2D*> textures;
     textures.reserve(objects.size() / 4 + 64);
 
-    // Pass 1: warm the common shader/program path before any gameplay draw.
     warmShaders();
 
-    // Pass 2: touch every gameplay object once. getObjectRect() also resolves
-    // cached object bounds when dirty, which is exactly the kind of one-time
-    // work we want paid for under "Optimizing...".
     for (auto* object : objects) {
         if (!object) continue;
 
@@ -256,8 +280,6 @@ void prewarmLevel(PlayLayer* layer) {
         }
     }
 
-    // Pass 3: warm the object-id -> frame lookup plus the frame's own texture,
-    // crop, offset and original-size data once per unique object type.
     auto* toolbox = ObjectToolbox::sharedState();
     auto* frameCache = CCSpriteFrameCache::get();
     if (toolbox && frameCache) {
@@ -273,23 +295,43 @@ void prewarmLevel(PlayLayer* layer) {
         }
     }
 
-    // Pass 4: warm the rest of the already-created PlayLayer tree, including
-    // player/UI/effect sprites that are not present in m_objects.
     warmSceneGraph(layer, objects.size() * 2 + 256, textures);
-
-    // Pass 5: make the GL driver see every unique texture once during loading.
     warmTextureBindings(textures);
-
-    // Pass 6: seed several allocator size classes and page-touch the memory.
     warmAllocator(objects.size());
 
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::steady_clock::now() - started
     ).count();
 
+    if (g_levelSession && g_levelSession->layer == layer) {
+        g_levelSession->optimized = true;
+        g_levelSession->objectCount = objects.size();
+        g_levelSession->objectTypeCount = objectIDs.size();
+        g_levelSession->textureCount = textures.size();
+    }
+
     log::info(
         "CBF+ aggressive prewarm complete: {} objects, {} object types, {} textures, {} ms",
         objects.size(), objectIDs.size(), textures.size(), elapsed
+    );
+}
+
+void endLevelSession(PlayLayer* layer) {
+    if (!g_levelSession) return;
+
+    // A late onExit from an older scene must never wipe a newer session.
+    if (layer && g_levelSession->layer != layer) {
+        return;
+    }
+
+    auto serial = g_levelSession->serial;
+    auto optimized = g_levelSession->optimized;
+    g_levelSession.reset();
+
+    log::info(
+        "CBF+ level session {} ended{}",
+        serial,
+        optimized ? " after optimization" : " before optimization completed"
     );
 }
 }
